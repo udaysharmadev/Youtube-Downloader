@@ -58,6 +58,16 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/roadmap" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Roadmap
+                </Link>
+              </li>
+              <li>
+                <Link href="/changelog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Changelog
+                </Link>
+              </li>
+              <li>
                 <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   About the Creator
                 </Link>

@@ -6,6 +6,8 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueueProvider } from "@/components/providers/queue-provider";
+import { QueuePanel } from "@/components/queue-panel";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -59,10 +61,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TooltipProvider>
-            <Header />
-            <main className="flex-1 flex flex-col">{children}</main>
-            <Footer />
-            <Toaster position="top-center" />
+            <QueueProvider>
+              <Header />
+              <main className="flex-1 flex flex-col">{children}</main>
+              <Footer />
+              <Toaster position="top-center" />
+              <QueuePanel />
+            </QueueProvider>
           </TooltipProvider>
         </ThemeProvider>
       </body>

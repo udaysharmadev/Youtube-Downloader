@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, Info, Home, DownloadCloud, Star } from "lucide-react";
+import { Settings, Info, Home, DownloadCloud, Star, History, BarChart3 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { GithubIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,8 @@ export function Header() {
 
   const navItems = [
     { href: "/", label: "Home", icon: Home },
+    { href: "/history", label: "History", icon: History },
+    { href: "/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/about", label: "About", icon: Info },
     { href: "/settings", label: "Settings", icon: Settings },
   ];

@@ -2,11 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Loader2, ArrowRight } from "lucide-react";
+import { X, Loader2, ArrowRight, ClipboardPaste } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useDownloaderStore } from "@/store/use-downloader-store";
 import { MediaCard } from "./media-card";
+import { PlaylistCard } from "./playlist-card";
 import { HistoryList } from "./history-list";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -14,8 +15,10 @@ export function DownloaderForm() {
   const [url, setUrl] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "error" | "success">("idle");
   const [mediaInfo, setMediaInfo] = useState<any>(null);
+  const [clipboardUrl, setClipboardUrl] = useState<string | null>(null);
+  const addToQueue = useDownloaderStore((state) => state.addToQueue);
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleClear = () => {
     setUrl("");
@@ -37,11 +40,92 @@ export function DownloaderForm() {
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+
+    // Clipboard detection
+    const checkClipboard = async () => {
+      try {
+        if (!navigator.clipboard) return;
+        const text = await navigator.clipboard.readText();
+        if (text && (text.includes("youtube.com") || text.includes("youtu.be"))) {
+          if (text !== url) {
+            setClipboardUrl(text);
+          }
+        } else {
+          setClipboardUrl(null);
+        }
+      } catch (err) {
+        // Ignore permission errors silently
+      }
+    };
+
+    window.addEventListener("focus", checkClipboard);
+    // Initial check (may prompt user depending on browser, so we wait for focus usually, but let's try)
+    checkClipboard();
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("focus", checkClipboard);
+    };
+  }, [url]);
 
   const fetchMetadata = async (targetUrl: string) => {
     if (!targetUrl) return;
+
+    // Check if multiple URLs are passed
+    const urls = targetUrl.split(/\r?\n/).map(u => u.trim()).filter(u => u);
+    
+    if (urls.length > 1) {
+      // Batch mode
+      setState("loading");
+      setMediaInfo(null);
+      let successCount = 0;
+
+      for (const u of urls) {
+        try {
+          // Just queue them directly with minimal info, let queue manager fetch deep info?
+          // No, Queue needs format. We have to fetch metadata to get formats.
+          // For simplicity, we just fetch them.
+          const res = await fetch("/api/info", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: u }),
+          });
+          const data = await res.json();
+          if (res.ok && data) {
+            // Queue it automatically
+            const defaultFormat = data.formats?.find((f: any) => f.isRecommended) || data.formats?.[0];
+            if (defaultFormat) {
+              addToQueue({
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                url: u,
+                title: data.title,
+                thumbnail: data.thumbnail,
+                duration: data.duration,
+                format: defaultFormat.type as 'video' | 'audio',
+                qualityLabel: defaultFormat.qualityLabel,
+                itag: defaultFormat.itag,
+                type: defaultFormat.type,
+                status: 'pending',
+                progress: 0,
+                addedAt: Date.now(),
+              });
+              successCount++;
+            }
+          }
+        } catch (err) {
+          // Skip failures in batch
+        }
+      }
+      
+      setState("idle");
+      setUrl("");
+      if (successCount > 0) {
+        toast.success(`Queued ${successCount} items successfully!`);
+      } else {
+        toast.error("Failed to process batch URLs.");
+      }
+      return;
+    }
 
     setState("loading");
     setMediaInfo(null);
@@ -72,6 +156,14 @@ export function DownloaderForm() {
     fetchMetadata(url);
   };
 
+  const handlePasteClipboard = () => {
+    if (clipboardUrl) {
+      setUrl(clipboardUrl);
+      setClipboardUrl(null);
+      fetchMetadata(clipboardUrl);
+    }
+  };
+
   return (
     <div className="w-full mx-auto space-y-12">
       <motion.form
@@ -82,11 +174,10 @@ export function DownloaderForm() {
         className="relative group flex items-center shadow-sm rounded-2xl bg-card border border-border/50 p-2 focus-within:ring-4 focus-within:ring-primary/10 focus-within:border-primary/30 transition-all duration-300 hover:shadow-md"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-        <Input
+        <textarea
           ref={inputRef}
-          type="url"
-          placeholder="https://www.youtube.com/watch?v=..."
-          className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 px-4 text-lg h-14 placeholder:text-muted-foreground/50"
+          placeholder="Paste one or multiple YouTube URLs..."
+          className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 px-4 py-4 text-lg min-h-[56px] max-h-32 placeholder:text-muted-foreground/50 resize-none outline-none"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
         />
@@ -127,6 +218,27 @@ export function DownloaderForm() {
         </div>
       </motion.form>
 
+      <AnimatePresence>
+        {clipboardUrl && !url && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex justify-center"
+          >
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handlePasteClipboard}
+              className="rounded-full shadow-sm border border-border/50 text-xs gap-2 px-4 hover:bg-primary/10 hover:text-primary transition-colors"
+            >
+              <ClipboardPaste className="w-3.5 h-3.5" />
+              YouTube link detected. Paste now.
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence mode="wait">
         {state === "loading" && !mediaInfo && (
           <motion.div
@@ -163,10 +275,14 @@ export function DownloaderForm() {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="overflow-hidden"
           >
-            <MediaCard
-              info={mediaInfo}
-              onDownloadStateChange={(newState) => setState(newState === "idle" ? "success" : newState)}
-            />
+            {mediaInfo.type === 'playlist' ? (
+              <PlaylistCard info={mediaInfo} />
+            ) : (
+              <MediaCard
+                info={mediaInfo}
+                onDownloadStateChange={(newState) => setState(newState === "idle" ? "success" : newState)}
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>
