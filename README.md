@@ -1,147 +1,240 @@
 # YouTube Video Downloader
 
-An open-source web interface for `yt-dlp` built with Next.js 15. It extracts native video formats and merges high-quality video and audio streams on the fly.
+An open-source interface and queue manager for `yt-dlp` built with Next.js.
 
 ## Why this exists
 
-Most online video downloaders are riddled with intrusive ads, malicious redirects, and fake download buttons. This project provides a clean, fast, and straightforward download experience. It wraps the powerful `yt-dlp` CLI tool behind a modern React interface, allowing you to download native formats (including 4K/8K where available) without navigating a maze of popups.
+Most online downloaders are cluttered with ads, redirects, misleading buttons, and poor user experiences. This project provides a transparent, local-first workflow by wrapping the `yt-dlp` binary in a clean web interface without external dependencies or data tracking.
 
 ## Features
 
-- **Native Format Extraction:** Fetches all available formats directly from YouTube using `yt-dlp`.
-- **Dynamic Merging:** Uses `FFmpeg` to combine high-resolution video streams (which lack audio by default) with the highest quality audio streams.
-- **Audio-Only Mode:** Extracts pure audio streams directly to MP3.
-- **Zero Tracking:** No analytics, ads, or tracking scripts affecting the download flow.
-- **Local History:** Saves recent downloads to local storage for quick access.
+### Downloading
+- Video downloads
+- Audio downloads
+- Dynamic quality detection
+- Multiple format support
 
-## Architecture
+### Advanced Features
+- Playlist downloads
+- Batch downloads
+- Download queue
+- Clipboard detection
 
-### High-level architecture
+### User Experience
+- Responsive UI
+- Dark mode
+- Download history
+- Analytics dashboard
 
-```mermaid
-graph LR
-    A[Client] --> B[Next.js API]
-    B --> C[yt-dlp Process]
-    C --> D[YouTube Servers]
-    D --> C
-    C --> B
-    B --> A
-```
-
-### Download flow
-
-```mermaid
-graph TD
-    A[URL Input] --> B[Metadata Fetch API]
-    B --> C[Parse yt-dlp Formats]
-    C --> D[Quality Selection UI]
-    D --> E[Download API Route]
-    E --> F{Needs Merging?}
-    F -->|Yes| G[FFmpeg Video + Audio Merge]
-    F -->|No| H[Direct Stream]
-    G --> I[Stream Response to Client]
-    H --> I
-```
-
-### Request lifecycle
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Frontend
-    participant APIRoute
-    participant yt-dlp
-    
-    User->>Frontend: Submit YouTube URL
-    Frontend->>APIRoute: POST /api/info
-    APIRoute->>yt-dlp: yt-dlp --dump-json
-    yt-dlp-->>APIRoute: JSON Metadata
-    APIRoute-->>Frontend: Parsed Formats
-    User->>Frontend: Select Quality & Download
-    Frontend->>APIRoute: GET /api/download?url=...
-    APIRoute->>yt-dlp: yt-dlp -f <itag> -o -
-    yt-dlp-->>APIRoute: Byte Stream
-    APIRoute-->>Frontend: Stream Response
-    Frontend-->>User: File Save
-```
+### Open Source
+- Roadmap
+- Changelog
+- GitHub integration
 
 ## Tech Stack
 
-- **Next.js 15** (App Router) → Application framework and API routes
-- **TypeScript** → End-to-end type safety
-- **Tailwind CSS** → Utility-first styling
-- **Shadcn UI** → Accessible, unstyled component primitives
-- **Framer Motion** → Layout animations and transitions
-- **yt-dlp** → Core media extraction engine
-- **FFmpeg** → Stream merging and format conversion
+| Technology | Purpose |
+|------------|---------|
+| Next.js 15 | React framework, App Router, API routes. |
+| React 19 | UI component architecture and hooks. |
+| yt-dlp | Core extraction engine for fetching metadata and streaming media. |
+| Zustand | Client-side state management for the download queue and history. |
+| Tailwind CSS | Utility-first CSS framework for styling. |
+| Framer Motion | Animation library for route transitions and micro-interactions. |
+| Lucide React | SVG icon library. |
+
+## System Architecture
+
+### High-Level Architecture
+
+```mermaid
+flowchart LR
+  User([User]) <--> Frontend[Next.js Frontend]
+  Frontend <--> APIRoutes[Next.js API Routes]
+  APIRoutes <--> DownloadService[Download Service]
+  DownloadService <--> YtDlp[yt-dlp Binary]
+  YtDlp <--> YouTube[(YouTube)]
+```
+
+### Download Flow
+
+```mermaid
+flowchart TD
+  A[Paste URL] --> B[Metadata Extraction]
+  B --> C[Format Discovery]
+  C --> D[Quality Selection]
+  D --> E[Download Request]
+  E --> F[Stream Response]
+```
+
+### Playlist Flow
+
+```mermaid
+flowchart TD
+  A[Playlist URL] --> B[Metadata Fetch]
+  B --> C[Video Enumeration]
+  C --> D[Queue Creation]
+  D --> E[Download Processing]
+```
+
+### Request Lifecycle
+
+```mermaid
+flowchart LR
+  Browser[Browser] -->|POST| API[API Route]
+  API --> Validation[Validation Layer]
+  Validation --> Service[Service Layer]
+  Service --> YtDlp[yt-dlp]
+  YtDlp --> Service
+  Service --> API
+  API -->|JSON/Stream| Browser
+```
 
 ## Project Structure
 
-```text
-src/
-├── app/                  # Next.js App Router (Pages, Layouts, API Routes)
-│   ├── api/              # Server-side API endpoints
-│   │   ├── download/     # Handles streaming and FFmpeg merging
-│   │   ├── info/         # Handles yt-dlp metadata extraction
-│   │   └── github/       # Cached GitHub stars fetcher
-│   ├── about/            # Creator portfolio page
-│   └── page.tsx          # Main downloader interface
-├── components/           # React components
-│   ├── ui/               # Reusable Shadcn UI primitives
-│   ├── layout/           # Global header, footer, navigation
-│   └── downloader-form.tsx # Core input and validation logic
-├── lib/                  # Utilities (Analytics, classname merging)
-└── store/                # Zustand state management (History)
+```mermaid
+graph TD
+  src --> app["app/ (Next.js App Router, Pages, API Routes)"]
+  src --> components["components/ (React UI Components, Providers)"]
+  src --> lib["lib/ (Utility functions, Core logic, Hooks)"]
+  src --> store["store/ (Zustand State Management)"]
+```
+- **app/**: Defines the routing structure and server-side API endpoints (`/api/info`, `/api/download`).
+- **components/**: Houses reusable UI elements (built with `shadcn/ui`) and complex interface modules (`DownloaderForm`, `QueuePanel`).
+- **lib/**: Contains core extraction abstractions (`core/downloader.ts`) and custom React hooks (`hooks/use-queue-manager.ts`).
+- **store/**: Global state definitions for the download queue, history, and user settings with local storage persistence.
+
+## Download Pipeline
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant A as API Route
+    participant S as Download Service
+    participant Y as yt-dlp
+    participant YT as YouTube
+
+    U->>F: Enter URL
+    F->>A: POST /api/info
+    A->>Y: Spawn yt-dlp (dump-json)
+    Y->>YT: Fetch metadata
+    YT-->>Y: Metadata JSON
+    Y-->>A: stdout
+    A-->>F: Formats & Quality Options
+    U->>F: Select Quality & Download
+    F->>S: Request Download Stream
+    S->>Y: Spawn yt-dlp (stream format)
+    Y->>YT: Request media chunks
+    YT-->>Y: Media Stream
+    Y-->>S: stdout stream
+    S-->>F: Pipe stream to browser
+    F-->>U: Save File
 ```
 
-## Installation
+## Queue Management Architecture
 
-### Prerequisites
+```mermaid
+stateDiagram-v2
+    [*] --> Pending : Added to Queue
+    Pending --> Downloading : Manager picks up item
+    Downloading --> Completed : Stream finishes successfully
+    Downloading --> Failed : Process errors or network drops
+    Downloading --> Paused : User interrupts
+    Paused --> Pending : User resumes
+    Failed --> Pending : User retries
+    Completed --> [*]
+```
 
-Ensure you have the following installed and available in your system path:
-- [Node.js](https://nodejs.org/en/) (v18+)
-- [Python 3](https://www.python.org/downloads/) (Required by yt-dlp)
-- [FFmpeg](https://ffmpeg.org/download.html) (Required for merging A/V streams)
+## Analytics Flow
 
-### Running locally
+```mermaid
+flowchart LR
+  Downloads[Downloads] --> Events[Event Dispatcher]
+  Events --> Store[Analytics Store (Zustand)]
+  Store --> Dashboard[Analytics Dashboard UI]
+```
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/udaysharmadev/Youtube-Downloader.git
-   cd Youtube-Downloader
-   ```
+## Getting Started
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+### Installation
 
-3. **Install yt-dlp globally:**
-   ```bash
-   # macOS
-   brew install yt-dlp
-   
-   # Linux / Windows (via pip)
-   python3 -m pip install -U yt-dlp
-   ```
+Ensure you have Node.js and `yt-dlp` installed on your system.
+`yt-dlp` must be available in your system's PATH.
 
-4. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
+```bash
+git clone https://github.com/udaysharmadev/Youtube-Downloader.git
+cd Youtube-Downloader
+npm install
+```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+### Development
+
+Start the Next.js development server:
+
+```bash
+npm run dev
+```
+
+### Build
+
+Compile the application for production:
+
+```bash
+npm run build
+```
+
+### Production
+
+Run the built application:
+
+```bash
+npm start
+```
+
+## Environment Variables
+
+No environment variables are required for standard local operation. The application relies entirely on the local `yt-dlp` binary.
+
+## API Overview
+
+- **`POST /api/info`**: Accepts a YouTube URL and returns video or playlist metadata, including available video and audio formats.
+- **`GET /api/download`**: Streams the media content from `yt-dlp` directly to the client based on URL and format `itag`.
+- **`GET /api/github/stars`**: Fetches the current GitHub repository star count.
+
+## Performance Considerations
+
+- **Streaming Downloads**: The `/api/download` route pipes standard output from the `child_process` directly to the client response, preventing high memory consumption on the server regardless of file size.
+- **Queue Processing**: The `useQueueManager` hook processes the queue sequentially (`isProcessing` lock) to prevent network saturation and browser blocking.
+- **Caching**: GitHub star fetching is cached statically by Next.js to respect API rate limits.
+- **Client Persistence**: Download history and the active queue are persisted in `localStorage` via Zustand middleware, ensuring state recovery on reload.
+
+## Roadmap
+
+- [x] Core Extraction Engine (yt-dlp integration)
+- [x] Media Platform UI
+- [x] Playlists & Batch Processing
+- [x] Queue System & Analytics
+- [ ] Browser Extension Foundation
+- [ ] Native Desktop App (Tauri)
+- [ ] Multi-platform Support
 
 ## Contributing
 
-We welcome contributions. Please review the [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting a pull request. 
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/your-feature`).
+3. Commit your changes (`git commit -am 'Add some feature'`).
+4. Push to the branch (`git push origin feature/your-feature`).
+5. Open a Pull Request.
 
-For bug reports or feature requests, please [open an issue](https://github.com/udaysharmadev/Youtube-Downloader/issues).
+Ensure all new code is strongly typed and follows the existing ESLint configurations. Verify builds locally (`npm run build`) before submitting.
 
 ## About the Author
 
-Built by [Uday Sharma](https://github.com/udaysharmadev), a developer and founder of HackShastra. 
+**Uday Sharma**
+Developer, Creator, and Founder of HackShastra.
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
+- [GitHub](https://github.com/udaysharmadev)
+- [LinkedIn](https://www.linkedin.com/in/udaydotai/)
+- [X (Twitter)](https://x.com/udaysharmatech)
+- [Instagram](https://www.instagram.com/udaysharmaaaaa/)
