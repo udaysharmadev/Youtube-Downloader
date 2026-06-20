@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Video, CheckCircle2, Loader2, Music, Clock, Eye, Calendar, User, Star } from "lucide-react";
+import { Download, Video, CheckCircle2, Loader2, Music, Clock, Eye, User, Star, Share2, Link2 } from "lucide-react";
+import { TwitterIcon, LinkedinIcon } from "@/components/icons";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useDownloaderStore } from "@/store/use-downloader-store";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 
 interface MediaFormat {
   itag: string;
@@ -75,10 +77,17 @@ export function MediaCard({ info, onDownloadStateChange }: MediaCardProps) {
     setProgress(0);
     onDownloadStateChange("loading");
 
+    trackEvent("download_initiated", { 
+      formatType: selectedFormat.type, 
+      quality: selectedFormat.qualityLabel,
+      url: info.url
+    });
+
     try {
       const response = await fetch(`/api/download?url=${encodeURIComponent(info.url)}&itag=${encodeURIComponent(selectedFormat.itag)}&type=${selectedFormat.type}`);
 
       if (!response.ok) {
+        trackEvent("download_failed", { reason: "response_not_ok" });
         const errorText = await response.text().catch(() => "Download failed");
         throw new Error(errorText);
       }
@@ -121,6 +130,11 @@ export function MediaCard({ info, onDownloadStateChange }: MediaCardProps) {
       setIsSuccess(true);
       onDownloadStateChange("success");
 
+      trackEvent("download_completed", { 
+        formatType: selectedFormat.type, 
+        quality: selectedFormat.qualityLabel 
+      });
+
       addHistoryItem({
         id: Date.now().toString(),
         url: info.url,
@@ -133,18 +147,39 @@ export function MediaCard({ info, onDownloadStateChange }: MediaCardProps) {
 
       toast.success("Download completed successfully!");
 
-      setTimeout(() => {
-        setIsSuccess(false);
-        setProgress(0);
-        onDownloadStateChange("idle");
-      }, 3000);
+      // Instead of resetting immediately, we keep the success state open for users to see the Share block.
+      // setTimeout(() => {
+      //   setIsSuccess(false);
+      //   setProgress(0);
+      //   onDownloadStateChange("idle");
+      // }, 3000);
 
     } catch (error: any) {
+      trackEvent("download_failed", { error: error?.message });
       onDownloadStateChange("error");
       toast.error(error?.message || "Failed to download media.");
       setProgress(0);
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const handleShare = async (platform: string) => {
+    trackEvent("share_clicked", { platform });
+    const text = `I just downloaded "${info.title}" using YouTube Downloader! Try it out:`;
+    const url = "https://github.com/udaysharmadev/Youtube-Downloader";
+
+    if (platform === "copy") {
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      toast.success("Link copied to clipboard!");
+    } else if (platform === "twitter") {
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank");
+    } else if (platform === "linkedin") {
+      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, "_blank");
+    } else if (platform === "native" && navigator.share) {
+      try {
+        await navigator.share({ title: "YouTube Downloader", text, url });
+      } catch (err) {}
     }
   };
 
@@ -307,44 +342,84 @@ export function MediaCard({ info, onDownloadStateChange }: MediaCardProps) {
                   exit={{ opacity: 0, height: 0 }}
                   className="space-y-2 overflow-hidden"
                 >
-                  <div className="flex justify-between text-sm font-medium">
-                    <span className="text-muted-foreground flex items-center gap-2">
-                      {isSuccess ? (
-                        <span className="text-green-500 flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> Complete</span>
-                      ) : (
-                        <span className="text-primary flex items-center gap-1.5"><Loader2 className="w-4 h-4 animate-spin" /> Downloading...</span>
-                      )}
-                    </span>
-                    <span className="tabular-nums">{Math.round(progress)}%</span>
-                  </div>
-                  <Progress value={progress} className="h-2 bg-muted/50" />
+                  {!isSuccess ? (
+                    <>
+                      <div className="flex justify-between text-sm font-medium">
+                        <span className="text-muted-foreground flex items-center gap-2">
+                          <span className="text-primary flex items-center gap-1.5"><Loader2 className="w-4 h-4 animate-spin" /> Downloading...</span>
+                        </span>
+                        <span className="tabular-nums">{Math.round(progress)}%</span>
+                      </div>
+                      <Progress value={progress} className="h-2 bg-muted/50" />
+                    </>
+                  ) : (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }} 
+                      animate={{ opacity: 1, y: 0 }} 
+                      className="bg-muted/30 border border-border/50 rounded-xl p-4 text-center space-y-4"
+                    >
+                      <div className="flex justify-center text-green-500 mb-2">
+                        <CheckCircle2 className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-foreground mb-1">Download Complete!</h4>
+                        <p className="text-sm text-muted-foreground">Enjoying the project? Support us by leaving a star on GitHub.</p>
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-2">
+                        <a 
+                          href="https://github.com/udaysharmadev/Youtube-Downloader" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          onClick={() => trackEvent("github_cta_clicked", { location: "post_download" })}
+                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-9 px-4 rounded-md bg-foreground text-background hover:opacity-90 font-medium text-sm transition-opacity"
+                        >
+                          <Star className="w-4 h-4 fill-background" /> Star us on GitHub
+                        </a>
+                      </div>
+
+                      <div className="flex items-center justify-center gap-3 pt-2">
+                        <span className="text-xs font-medium text-muted-foreground">Share:</span>
+                        <button onClick={() => handleShare("copy")} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Copy Link">
+                          <Link2 className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleShare("twitter")} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-[#1DA1F2] transition-colors" title="Share on Twitter">
+                          <TwitterIcon className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleShare("linkedin")} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-[#0A66C2] transition-colors" title="Share on LinkedIn">
+                          <LinkedinIcon className="w-4 h-4" />
+                        </button>
+                        {typeof navigator !== "undefined" && typeof navigator.share === "function" && (
+                          <button onClick={() => handleShare("native")} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Share">
+                            <Share2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <Button
-              className="w-full rounded-xl h-12 text-base font-medium transition-all shadow-sm"
-              onClick={handleDownload}
-              disabled={isDownloading || isSuccess || info.formats.length === 0}
-              variant={isSuccess ? "secondary" : "default"}
-            >
-              {isSuccess ? (
-                <>
-                  <CheckCircle2 className="w-5 h-5 mr-2" />
-                  Saved to Device
-                </>
-              ) : isDownloading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Processing Media...
-                </>
-              ) : (
-                <>
-                  <Download className="w-5 h-5 mr-2" />
-                  Download Now
-                </>
-              )}
-            </Button>
+            {!isSuccess && (
+              <Button
+                className="w-full rounded-xl h-12 text-base font-medium transition-all shadow-sm"
+                onClick={handleDownload}
+                disabled={isDownloading || info.formats.length === 0}
+              >
+                {isDownloading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Processing Media...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-5 h-5 mr-2" />
+                    Download Now
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </div>

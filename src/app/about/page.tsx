@@ -1,4 +1,4 @@
-import { ArrowUpRight, Code2, Users, Rocket } from "lucide-react";
+import { ArrowUpRight, Code2, Users, Rocket, Terminal, Database, Palette, Shield, BrainCircuit, Box, Workflow, GitBranch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -130,6 +130,37 @@ export default function AboutPage() {
             As the Co-Founder of HackShastra and Founder of Devndez, I actively foster developer communities. I've judged 35 hackathons and spoken at 28 events, guiding the next generation of engineers.
           </p>
         </Card>
+      </div>
+
+      {/* Tech Stack */}
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold tracking-tight border-b pb-2">Tech Stack</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="p-4 border-border/50 bg-card/40 backdrop-blur-md shadow-sm hover:bg-muted/50 transition-colors flex items-center gap-3">
+            <div className="h-8 w-8 rounded-md bg-blue-500/10 flex items-center justify-center text-blue-500">
+              <Code2 className="w-4 h-4" />
+            </div>
+            <span className="font-semibold text-sm">TypeScript</span>
+          </Card>
+          <Card className="p-4 border-border/50 bg-card/40 backdrop-blur-md shadow-sm hover:bg-muted/50 transition-colors flex items-center gap-3">
+            <div className="h-8 w-8 rounded-md bg-zinc-500/10 flex items-center justify-center text-foreground">
+              <Terminal className="w-4 h-4" />
+            </div>
+            <span className="font-semibold text-sm">Next.js 15</span>
+          </Card>
+          <Card className="p-4 border-border/50 bg-card/40 backdrop-blur-md shadow-sm hover:bg-muted/50 transition-colors flex items-center gap-3">
+            <div className="h-8 w-8 rounded-md bg-cyan-500/10 flex items-center justify-center text-cyan-500">
+              <Palette className="w-4 h-4" />
+            </div>
+            <span className="font-semibold text-sm">Tailwind CSS</span>
+          </Card>
+          <Card className="p-4 border-border/50 bg-card/40 backdrop-blur-md shadow-sm hover:bg-muted/50 transition-colors flex items-center gap-3">
+            <div className="h-8 w-8 rounded-md bg-green-500/10 flex items-center justify-center text-green-500">
+              <Database className="w-4 h-4" />
+            </div>
+            <span className="font-semibold text-sm">Node.js</span>
+          </Card>
+        </div>
       </div>
 
       {/* GitHub/Open Source */}

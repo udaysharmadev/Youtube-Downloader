@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, Info, Home, DownloadCloud } from "lucide-react";
+import { Settings, Info, Home, DownloadCloud, Star } from "lucide-react";
+import { useEffect, useState } from "react";
+import { GithubIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
 export function Header() {
@@ -13,6 +15,19 @@ export function Header() {
     { href: "/about", label: "About", icon: Info },
     { href: "/settings", label: "Settings", icon: Settings },
   ];
+
+  const [stars, setStars] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/github/stars")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.stars !== null) {
+          setStars(data.stars);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
@@ -26,26 +41,46 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="flex items-center gap-1 md:gap-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href;
+        <nav className="flex items-center gap-1 md:gap-4">
+          <div className="flex items-center gap-1 md:gap-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "hidden md:flex gap-2 rounded-md h-8 px-3 items-center text-sm font-medium transition-colors",
-                  isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
-                )}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "hidden md:flex gap-2 rounded-md h-8 px-3 items-center text-sm font-medium transition-colors",
+                    isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
 
-          <div className="flex md:hidden gap-1">
+          <div className="hidden md:block w-px h-4 bg-border/60 mx-1"></div>
+
+          <a 
+            href="https://github.com/udaysharmadev/Youtube-Downloader" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 h-8 px-3 rounded-full border border-border/50 bg-muted/30 hover:bg-muted/80 hover:border-border transition-all text-sm font-medium"
+          >
+            <GithubIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Star on GitHub</span>
+            {stars !== null && (
+              <span className="flex items-center gap-1 text-muted-foreground ml-1">
+                <Star className="w-3 h-3 fill-muted-foreground" />
+                {stars}
+              </span>
+            )}
+          </a>
+
+          <div className="flex md:hidden gap-1 ml-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
