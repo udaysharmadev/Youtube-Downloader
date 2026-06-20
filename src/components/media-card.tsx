@@ -362,8 +362,8 @@ export function MediaCard({ info, onDownloadStateChange }: MediaCardProps) {
                         <CheckCircle2 className="w-8 h-8" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-foreground mb-1">Download Complete!</h4>
-                        <p className="text-sm text-muted-foreground">Enjoying the project? Support us by leaving a star on GitHub.</p>
+                        <h4 className="font-semibold text-foreground mb-1">Download Complete</h4>
+                        <p className="text-sm text-muted-foreground">If you found this tool useful, consider starring it on GitHub.</p>
                       </div>
                       
                       <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-2">

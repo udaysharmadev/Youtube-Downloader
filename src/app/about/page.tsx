@@ -25,14 +25,14 @@ export default function AboutPage() {
       {/* Hero Section */}
       <div className="flex flex-col-reverse md:flex-row gap-8 items-start md:items-center justify-between">
         <div className="space-y-4 flex-1">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
             Uday Sharma
           </h1>
-          <p className="text-xl text-muted-foreground font-medium">
-            Tech Creator, Developer & Founder of HackShastra
+          <p className="text-lg text-muted-foreground font-medium">
+            Developer
           </p>
-          <p className="text-muted-foreground leading-relaxed">
-            I build elegant tools that solve real problems. Passionate about software engineering, community building, and creating educational content that empowers the next generation of developers in India and beyond.
+          <p className="text-muted-foreground leading-relaxed max-w-lg">
+            I am a full-stack developer focusing on building functional, well-designed open-source tools.
           </p>
           
           <div className="flex flex-wrap gap-3 pt-4">
@@ -58,78 +58,6 @@ export default function AboutPage() {
             US
           </div>
         </div>
-      </div>
-
-      {/* Creator Journey */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold tracking-tight border-b pb-2">The Journey</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50 shadow-sm space-y-3 transition-colors hover:bg-muted/50">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <Code2 className="w-5 h-5" />
-            </div>
-            <h3 className="font-semibold">Engineering</h3>
-            <p className="text-sm text-muted-foreground">Full-stack development specializing in modern web technologies, scalable architectures, and beautiful UIs.</p>
-          </Card>
-          
-          <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50 shadow-sm space-y-3 transition-colors hover:bg-muted/50">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <Rocket className="w-5 h-5" />
-            </div>
-            <h3 className="font-semibold">HackShastra</h3>
-            <p className="text-sm text-muted-foreground">Founder of HackShastra, a community-driven initiative dedicated to teaching and building open-source tech.</p>
-          </Card>
-
-          <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50 shadow-sm space-y-3 transition-colors hover:bg-muted/50">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <Users className="w-5 h-5" />
-            </div>
-            <h3 className="font-semibold">Community</h3>
-            <p className="text-sm text-muted-foreground">Growing a strong community of tech enthusiasts through high-quality video content and educational resources.</p>
-          </Card>
-        </div>
-      </div>
-
-      {/* Stats Section */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="p-6 border-border/50 bg-card/40 backdrop-blur-md shadow-sm text-center space-y-2 hover:bg-muted/30 transition-colors">
-          <h4 className="text-3xl font-bold text-foreground">500k+</h4>
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Community</p>
-        </Card>
-        <Card className="p-6 border-border/50 bg-card/40 backdrop-blur-md shadow-sm text-center space-y-2 hover:bg-muted/30 transition-colors">
-          <h4 className="text-3xl font-bold text-foreground">35x</h4>
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Hackathon Judge</p>
-        </Card>
-        <Card className="p-6 border-border/50 bg-card/40 backdrop-blur-md shadow-sm text-center space-y-2 hover:bg-muted/30 transition-colors">
-          <h4 className="text-3xl font-bold text-foreground">28x</h4>
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Guest Speaker</p>
-        </Card>
-        <Card className="p-6 border-border/50 bg-card/40 backdrop-blur-md shadow-sm text-center space-y-2 hover:bg-muted/30 transition-colors">
-          <h4 className="text-3xl font-bold text-foreground">2+</h4>
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Founding Roles</p>
-        </Card>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card className="p-8 border-border/50 bg-card/40 backdrop-blur-md shadow-sm hover:shadow-md transition-shadow">
-          <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-6">
-            <Code2 className="w-6 h-6" />
-          </div>
-          <h3 className="text-xl font-bold mb-3">Tech Creator & Dev</h3>
-          <p className="text-muted-foreground leading-relaxed text-sm">
-            I build robust applications like this downloader and create content to educate over half a million developers worldwide. My goal is to make tech accessible and build tools that solve real problems.
-          </p>
-        </Card>
-        
-        <Card className="p-8 border-border/50 bg-card/40 backdrop-blur-md shadow-sm hover:shadow-md transition-shadow">
-          <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-6">
-            <Users className="w-6 h-6" />
-          </div>
-          <h3 className="text-xl font-bold mb-3">Community Leader</h3>
-          <p className="text-muted-foreground leading-relaxed text-sm">
-            As the Co-Founder of HackShastra and Founder of Devndez, I actively foster developer communities. I've judged 35 hackathons and spoken at 28 events, guiding the next generation of engineers.
-          </p>
-        </Card>
       </div>
 
       {/* Tech Stack */}
@@ -171,10 +99,10 @@ export default function AboutPage() {
           <div className="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-2">
               <h3 className="text-lg font-semibold flex items-center gap-2">
-                <GithubIcon className="w-5 h-5" /> Open Source Contributor
+                <GithubIcon className="w-5 h-5" /> Open Source
               </h3>
               <p className="text-muted-foreground text-sm">
-                I believe in building in public and sharing code with the community. Check out my repositories, stars, and contributions.
+                Most of my work is open-source. You can view the source code for my projects on GitHub.
               </p>
             </div>
             <a href="https://github.com/udaysharmadev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 shrink-0 group">

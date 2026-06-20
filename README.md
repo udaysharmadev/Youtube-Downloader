@@ -1,58 +1,109 @@
-<div align="center">
-  <img src="https://raw.githubusercontent.com/udaysharmadev/Youtube-Downloader/main/public/og-image.png" alt="YouTube Downloader Banner" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
+# YouTube Video Downloader
 
-  <h1>📺 YouTube Downloader</h1>
-  
-  <p><strong>Fast, secure, and limitless media downloading. Built for the modern web.</strong></p>
+An open-source web interface for `yt-dlp` built with Next.js 15. It extracts native video formats and merges high-quality video and audio streams on the fly.
 
-  <p>
-    <a href="https://github.com/udaysharmadev/Youtube-Downloader/stargazers"><img src="https://img.shields.io/github/stars/udaysharmadev/Youtube-Downloader?style=for-the-badge&color=000000" alt="Stars" /></a>
-    <a href="https://github.com/udaysharmadev/Youtube-Downloader/issues"><img src="https://img.shields.io/github/issues/udaysharmadev/Youtube-Downloader?style=for-the-badge&color=000000" alt="Issues" /></a>
-    <a href="https://github.com/udaysharmadev/Youtube-Downloader/network/members"><img src="https://img.shields.io/github/forks/udaysharmadev/Youtube-Downloader?style=for-the-badge&color=000000" alt="Forks" /></a>
-    <a href="https://github.com/udaysharmadev/Youtube-Downloader/blob/main/LICENSE"><img src="https://img.shields.io/github/license/udaysharmadev/Youtube-Downloader?style=for-the-badge&color=000000" alt="License" /></a>
-  </p>
-  
-  <p>
-    <a href="#features">Features</a> •
-    <a href="#architecture">Architecture</a> •
-    <a href="#installation">Installation</a> •
-    <a href="#contributing">Contributing</a>
-  </p>
-</div>
+## Why this exists
 
----
+Most online video downloaders are riddled with intrusive ads, malicious redirects, and fake download buttons. This project provides a clean, fast, and straightforward download experience. It wraps the powerful `yt-dlp` CLI tool behind a modern React interface, allowing you to download native formats (including 4K/8K where available) without navigating a maze of popups.
 
-## ✨ Features
+## Features
 
-YouTube Downloader is engineered to provide a seamless, premium media extraction experience without the clutter of traditional downloading sites.
+- **Native Format Extraction:** Fetches all available formats directly from YouTube using `yt-dlp`.
+- **Dynamic Merging:** Uses `FFmpeg` to combine high-resolution video streams (which lack audio by default) with the highest quality audio streams.
+- **Audio-Only Mode:** Extracts pure audio streams directly to MP3.
+- **Zero Tracking:** No analytics, ads, or tracking scripts affecting the download flow.
+- **Local History:** Saves recent downloads to local storage for quick access.
 
-- 🚀 **Lightning Fast:** Processes and extracts metadata in milliseconds.
-- 🎬 **True 4K/8K Support:** Downloads the absolute highest available native video quality and intelligently merges the best audio stream dynamically.
-- 🎵 **Dedicated Audio Pipeline:** Need just the music? Extract crisp MP3s at 128kbps, 192kbps, or 320kbps instantly.
-- 🛡️ **Privacy First:** 100% zero telemetry on your downloads. No tracking, no ads, no popups.
-- 💎 **Premium Interface:** Built with Next.js 15, Tailwind CSS, and Framer Motion for a buttery-smooth, interactive user experience.
-- 📚 **Smart History:** Keeps a local, searchable history of your recent downloads directly in your browser.
+## Architecture
 
-## 🏗️ Architecture
+### High-level architecture
 
-The application is split into a robust modern frontend and a powerful streaming backend:
+```mermaid
+graph LR
+    A[Client] --> B[Next.js API]
+    B --> C[yt-dlp Process]
+    C --> D[YouTube Servers]
+    D --> C
+    C --> B
+    B --> A
+```
 
-- **Frontend:** `Next.js 15` App Router, `React`, `Tailwind CSS`, `Framer Motion`, `Shadcn UI`.
-- **Backend:** Node.js streams natively executing `yt-dlp` in a spawned child process. 
-- **Merging Engine:** Uses `FFmpeg` under the hood to combine high-res video streams (which lack native audio on YouTube) with the best available audio streams on-the-fly, ensuring perfect A/V sync without writing massive temporary files.
+### Download flow
 
-## 🚀 Installation
+```mermaid
+graph TD
+    A[URL Input] --> B[Metadata Fetch API]
+    B --> C[Parse yt-dlp Formats]
+    C --> D[Quality Selection UI]
+    D --> E[Download API Route]
+    E --> F{Needs Merging?}
+    F -->|Yes| G[FFmpeg Video + Audio Merge]
+    F -->|No| H[Direct Stream]
+    G --> I[Stream Response to Client]
+    H --> I
+```
 
-Running YouTube Downloader locally is straightforward.
+### Request lifecycle
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant APIRoute
+    participant yt-dlp
+    
+    User->>Frontend: Submit YouTube URL
+    Frontend->>APIRoute: POST /api/info
+    APIRoute->>yt-dlp: yt-dlp --dump-json
+    yt-dlp-->>APIRoute: JSON Metadata
+    APIRoute-->>Frontend: Parsed Formats
+    User->>Frontend: Select Quality & Download
+    Frontend->>APIRoute: GET /api/download?url=...
+    APIRoute->>yt-dlp: yt-dlp -f <itag> -o -
+    yt-dlp-->>APIRoute: Byte Stream
+    APIRoute-->>Frontend: Stream Response
+    Frontend-->>User: File Save
+```
+
+## Tech Stack
+
+- **Next.js 15** (App Router) → Application framework and API routes
+- **TypeScript** → End-to-end type safety
+- **Tailwind CSS** → Utility-first styling
+- **Shadcn UI** → Accessible, unstyled component primitives
+- **Framer Motion** → Layout animations and transitions
+- **yt-dlp** → Core media extraction engine
+- **FFmpeg** → Stream merging and format conversion
+
+## Project Structure
+
+```text
+src/
+├── app/                  # Next.js App Router (Pages, Layouts, API Routes)
+│   ├── api/              # Server-side API endpoints
+│   │   ├── download/     # Handles streaming and FFmpeg merging
+│   │   ├── info/         # Handles yt-dlp metadata extraction
+│   │   └── github/       # Cached GitHub stars fetcher
+│   ├── about/            # Creator portfolio page
+│   └── page.tsx          # Main downloader interface
+├── components/           # React components
+│   ├── ui/               # Reusable Shadcn UI primitives
+│   ├── layout/           # Global header, footer, navigation
+│   └── downloader-form.tsx # Core input and validation logic
+├── lib/                  # Utilities (Analytics, classname merging)
+└── store/                # Zustand state management (History)
+```
+
+## Installation
 
 ### Prerequisites
 
-You must have the following installed on your machine:
-- [Node.js](https://nodejs.org/en/) (v18 or higher)
-- [Python 3](https://www.python.org/downloads/) (Required for `yt-dlp`)
-- [FFmpeg](https://ffmpeg.org/download.html) (Required for merging video/audio and format conversion)
+Ensure you have the following installed and available in your system path:
+- [Node.js](https://nodejs.org/en/) (v18+)
+- [Python 3](https://www.python.org/downloads/) (Required by yt-dlp)
+- [FFmpeg](https://ffmpeg.org/download.html) (Required for merging A/V streams)
 
-### Setup
+### Running locally
 
 1. **Clone the repository:**
    ```bash
@@ -60,17 +111,17 @@ You must have the following installed on your machine:
    cd Youtube-Downloader
    ```
 
-2. **Install Node dependencies:**
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. **Install `yt-dlp` globally:**
+3. **Install yt-dlp globally:**
    ```bash
-   # On macOS (Homebrew)
+   # macOS
    brew install yt-dlp
    
-   # On Linux/Windows via pip
+   # Linux / Windows (via pip)
    python3 -m pip install -U yt-dlp
    ```
 
@@ -79,30 +130,18 @@ You must have the following installed on your machine:
    npm run dev
    ```
 
-5. **Open the App:** Navigate to [http://localhost:3000](http://localhost:3000)
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 📖 Usage
+## Contributing
 
-1. **Paste a Link**: Copy any YouTube URL and paste it into the downloader form.
-2. **Hit Enter**: The app instantly fetches all available native qualities.
-3. **Select Format**: Choose between crisp video resolutions or high-fidelity audio streams.
-4. **Download**: The backend seamlessly streams the optimized file directly to your local device.
+We welcome contributions. Please review the [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting a pull request. 
 
-## 🤝 Contributing
+For bug reports or feature requests, please [open an issue](https://github.com/udaysharmadev/Youtube-Downloader/issues).
 
-We love open source! Whether you're fixing bugs, improving the documentation, or proposing new features, your contributions are welcome.
+## About the Author
 
-Please read our [Contributing Guidelines](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md) before submitting a Pull Request.
+Built by [Uday Sharma](https://github.com/udaysharmadev), a developer and founder of HackShastra. 
 
-**Looking for a place to start?**
-Check out the [Issues tab](https://github.com/udaysharmadev/Youtube-Downloader/issues) for `good first issue` labels.
+## License
 
-## ⭐ Show your support
-
-If you found this project helpful, please give it a ⭐️! It helps the project grow and reach more developers.
-
----
-
-<div align="center">
-  Built with ❤️ by <a href="https://github.com/udaysharmadev">Uday Sharma</a> and the open-source community.
-</div>
+This project is licensed under the [MIT License](LICENSE).

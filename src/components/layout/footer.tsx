@@ -31,7 +31,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
-              Fast, secure, and limitless media downloading. We provide the highest quality formats directly to your device without the hassle of ads or waiting times.
+              An open-source interface for yt-dlp. Built with Next.js and Tailwind CSS.
             </p>
             <div className="flex items-center gap-4 pt-2">
               <a href="https://github.com/udaysharmadev" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">

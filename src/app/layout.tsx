@@ -11,11 +11,11 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "YouTube Downloader - Fast & Free Media Extraction",
+    default: "YouTube Downloader",
     template: "%s | YouTube Downloader",
   },
-  description: "Download YouTube videos in 4K, 8K, and high-quality MP3 formats instantly. Fast, secure, zero ads, and 100% open source.",
-  keywords: ["youtube downloader", "video downloader", "mp3 converter", "4k downloader", "open source", "yt-dlp"],
+  description: "An open-source YouTube video and audio downloader powered by Next.js and yt-dlp.",
+  keywords: ["youtube downloader", "yt-dlp", "nextjs", "open source"],
   authors: [{ name: "Uday Sharma", url: "https://github.com/udaysharmadev" }],
   creator: "Uday Sharma",
   metadataBase: new URL("https://youtube-downloader.udaysharma.dev"),
@@ -23,22 +23,22 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://youtube-downloader.udaysharma.dev",
-    title: "YouTube Downloader - Fast & Free Media Extraction",
-    description: "Download YouTube videos in 4K, 8K, and high-quality MP3 formats instantly. Fast, secure, zero ads, and 100% open source.",
+    title: "YouTube Downloader",
+    description: "An open-source YouTube video and audio downloader powered by Next.js and yt-dlp.",
     siteName: "YouTube Downloader",
     images: [
       {
         url: "https://raw.githubusercontent.com/udaysharmadev/Youtube-Downloader/main/public/og-image.png",
         width: 1200,
         height: 630,
-        alt: "YouTube Downloader Preview",
+        alt: "YouTube Downloader",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "YouTube Downloader - Fast & Free Media Extraction",
-    description: "Download YouTube videos in 4K, 8K, and high-quality MP3 formats instantly.",
+    title: "YouTube Downloader",
+    description: "An open-source YouTube video and audio downloader powered by Next.js and yt-dlp.",
     creator: "@udaysharmatech",
     images: ["https://raw.githubusercontent.com/udaysharmadev/Youtube-Downloader/main/public/og-image.png"],
   },
