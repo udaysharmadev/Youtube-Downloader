@@ -150,9 +150,9 @@ stateDiagram-v2
 
 ```mermaid
 flowchart LR
-  Downloads[Downloads] --> Events[Event Dispatcher]
-  Events --> Store[Analytics Store (Zustand)]
-  Store --> Dashboard[Analytics Dashboard UI]
+  Downloads --> Events["Event Dispatcher"]
+  Events --> Store["Analytics Store (Zustand)"]
+  Store --> Dashboard["Analytics Dashboard UI"]
 ```
 
 ## Getting Started
